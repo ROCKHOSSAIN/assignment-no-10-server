@@ -50,7 +50,7 @@ async function run() {
       res.send(result)
     })
 
-    //now update specific one
+    //now update specific one particular product
     app.put('/allcar/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
