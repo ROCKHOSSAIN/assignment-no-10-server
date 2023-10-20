@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-require('dotenv').config(); 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+require('dotenv').config();
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 //addCars
@@ -27,20 +27,49 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const carsCollection  =client.db('carsData').collection('carStore')
+    const carsCollection = client.db('carsData').collection('carStore')
 
-    app.post('/allcar',async(req,res)=>{
-        const newCar = req.body;
-        console.log(newCar)
-        const result = await carsCollection.insertOne(newCar)
-        res.send(result)
+    app.post('/allcar', async (req, res) => {
+      const newCar = req.body;
+      console.log(newCar)
+      const result = await carsCollection.insertOne(newCar)
+      res.send(result)
     })
-    app.get('/allcar',async(req,res)=>{
-        const cursor = carsCollection.find();
-        const result = await cursor.toArray();
-        res.send(result)
+    app.get('/allcar', async (req, res) => {
+      const cursor = carsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
     })
-    
+
+    //to find car
+    app.get('/allcar/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await carsCollection.findOne(query);
+      res.send(result)
+    })
+
+    //now update specific one
+    app.put('/allcar/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const updatedCar = req.body;
+      const Car = {
+        $set: {
+          name: updatedCar.name,
+          brandName: updatedCar.brandName,
+          type: updatedCar.type,
+          price: updatedCar.price,
+          photo: updatedCar.photo,
+          rating: updatedCar.rating,
+          description: updatedCar.description,
+        }
+      }
+      const result = await carsCollection.updateOne(filter,Car,options)
+      res.send(result)
+    })
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
@@ -53,9 +82,9 @@ run().catch(console.dir);
 //middleware
 
 
-app.get('/',(req,res)=>{
-    res.send('Cars product making server is running');
+app.get('/', (req, res) => {
+  res.send('Cars product making server is running');
 })
-app.listen(port,()=>{
-    console.log(`Cars server is running on the port :${port}`)
+app.listen(port, () => {
+  console.log(`Cars server is running on the port :${port}`)
 })
