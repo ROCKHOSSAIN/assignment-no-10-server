@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const carsCollection = client.db('carsData').collection('carStore')
     const addToCartCollection = client.db('addCartData').collection('addCart')
 
@@ -71,7 +71,7 @@ async function run() {
       res.send(result)
     })
 
-    //add to cart data
+    //add to cart data to create
     app.post('/myCart/:id',async(req,res)=>{
       const newCart = req.body;
       console.log(newCart)
@@ -81,9 +81,22 @@ async function run() {
 
     })
 
+    //add to card data to get from database
+    app.get('/myCart',async(req,res)=>{
+      const cursor = addToCartCollection.find();
+      const result = await cursor.toArray()
+      res.send(result);
+    })
 
+    //to delete from cart
+    app.delete('/myCart/:id',async(req,res)=>{
+      const id = req.params.id
+      const query ={_id:new ObjectId(id)};
+      const result = await addToCartCollection.deleteOne(query)
+      res.send(result);
+    })
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
